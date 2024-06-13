@@ -1,22 +1,17 @@
 package main
 
-type model struct {
-	cursor   int
-	choices  []string
-	todos    []string
-	input    string
-	addMode  bool
-	viewMode bool
-	width    int
-	height   int
-}
+import (
+	"chat/internal/data"
+)
 
-func initialModel() model {
-	return model{
-		choices:  []string{"Add Todo", "View Todos"},
-		todos:    []string{},
-		input:    "",
-		addMode:  false,
-		viewMode: false,
-	}
+type model struct {
+	cursor    int
+	choices   []string
+	todos     []string
+	input     string
+	addMode   bool
+	viewMode  bool
+	width     int
+	height    int
+	todoModel *data.TodoModel
 }
