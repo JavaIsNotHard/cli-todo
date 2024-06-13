@@ -3,16 +3,14 @@ package data
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"time"
 )
 
 type Todo struct {
-	ID      int64     `json:"id"`
-	Title   string    `json:"title"`
-	Items   []string  `json:"items"`
-	Created time.Time `json:"created_at"`
+	ID      int64
+	Items   string
+	Created time.Time
 }
 
 var (
@@ -23,21 +21,27 @@ type TodoModel struct {
 	DB *sql.DB
 }
 
-func (m TodoModel) GetSingleItem(id int64) (*Todo, error) {
+func (m TodoModel) GetAllTodo(id int64) ([]string, error) {
 	query := `
-		SELECT title, items FROM todo;
+		SELECT items FROM todo;
 	`
-
-	var item Todo
+	var item []Todo
 
 	ctx, cancel := context.WithTimeout(context.TODO(), 3*time.Second)
 	defer cancel()
 
-	err := m.DB.QueryRowContext(ctx, query, id).Scan(
-		&item.Title,
-		&item.Items,
-	)
+	row, err := m.DB.QueryContext(ctx, query)
 
+	for row.Next() {
+		var todo Todo
+		err := row.Scan(&todo.Items)
+		if err != nil {
+			return nil, err
+		}
+		item = append(item, todo)
+	}
+
+	err = row.Err()
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
@@ -47,26 +51,24 @@ func (m TodoModel) GetSingleItem(id int64) (*Todo, error) {
 		}
 	}
 
-	return &item, nil
+	var result []string
+	for _, entires := range item {
+		result = append(result, entires.Items)
+	}
+
+	return result, nil
 }
 
 func (m TodoModel) InsertItem(todo *Todo) error {
 	query := `
-		INSERT INTO todo (title, items) VALUES (?, ?)
-		RETURNING title, items;
+		INSERT INTO todo (items) VALUES (?)
 	`
-	jsonData, err := json.Marshal(todo.Items)
-
-	if err != nil {
-		return err
-	}
-
-	args := []any{todo.Title, jsonData}
+	args := []any{todo.Items}
 
 	context, cancel := context.WithTimeout(context.TODO(), 3*time.Second)
 	defer cancel()
 
-	_, err = m.DB.ExecContext(context, query, args...)
+	_, err := m.DB.ExecContext(context, query, args...)
 
 	return err
 }
