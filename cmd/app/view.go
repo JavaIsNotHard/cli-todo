@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/charmbracelet/lipgloss"
 )
@@ -15,11 +16,15 @@ func (m model) View() string {
 			m.input,
 		)
 	} else if m.viewMode {
-		if len(m.todos) == 0 {
+		todos, err := m.todoModel.GetAllTodo()
+		if err != nil {
+			log.Fatal("error")
+		}
+		if len(todos) == 0 {
 			content = "No todos found.\n\nPress q to quit.\n"
 		} else {
 			content = "Todos:\n\n"
-			for i, todo := range m.todos {
+			for i, todo := range todos {
 				content += fmt.Sprintf("%d. %s\n", i+1, todo)
 			}
 			content += "\nPress q to quit.\n"
