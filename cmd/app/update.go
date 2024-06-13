@@ -29,7 +29,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "enter":
 			if m.addMode {
-				m.todos = append(m.todos, m.input)
+				m.todoModel.InsertItem(m.input)
 				m.addMode = false
 				m.input = ""
 			} else if m.viewMode {
