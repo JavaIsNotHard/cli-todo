@@ -8,9 +8,8 @@ import (
 )
 
 type Todo struct {
-	ID      int64
-	Items   string
-	Created time.Time
+	ID    int64
+	Items string
 }
 
 var (
@@ -21,7 +20,7 @@ type TodoModel struct {
 	DB *sql.DB
 }
 
-func (m TodoModel) GetAllTodo(id int64) ([]string, error) {
+func (m TodoModel) GetAllTodo() ([]string, error) {
 	query := `
 		SELECT items FROM todo;
 	`
@@ -59,11 +58,11 @@ func (m TodoModel) GetAllTodo(id int64) ([]string, error) {
 	return result, nil
 }
 
-func (m TodoModel) InsertItem(todo *Todo) error {
+func (m TodoModel) InsertItem(item string) error {
 	query := `
 		INSERT INTO todo (items) VALUES (?)
 	`
-	args := []any{todo.Items}
+	args := []any{item}
 
 	context, cancel := context.WithTimeout(context.TODO(), 3*time.Second)
 	defer cancel()
